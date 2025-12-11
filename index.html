@@ -1579,34 +1579,37 @@ function setupTabEvents() {
       
 
       // 초기 데이터 설정 (처음 실행 시)
-      function setupInitialData() {
-          // 기본 회의실 데이터 추가
-          const roomsRef = db.collection('rooms');
-          
-          roomsRef.get().then((snapshot) => {
-              if (snapshot.empty) {
-                  // 데이터가 없으면 초기 데이터 추가
-                  const initialRooms = [
-                      { name: '회의실1', capacity: 4, equipment: '화이트보드, 전자칠판' },
-                      { name: '회의실2', capacity: 4, equipment: '화이트보드' },
-                      { name: '화상 회의실', capacity: 20, equipment: '컴퓨터, 음향시스템, 전자칠판, 화상회의 장비' },
-                      { name: '스튜디오1', capacity: 3, equipment: '컴퓨터, 크로마키 배경지, 촬영장비(사무실보관)' },
-                      { name: '스튜디오2', capacity: 6, equipment: '제품촬영 스탠드, 배경지, 촬영장비(사무실보관)' },
-                      { name: '오픈세미나실', capacity: 30, equipment: '200인치 LED 디스플레이, 음향시스템' }
-                  ];
-                  
-                  const batch = db.batch();
-                  initialRooms.forEach(room => {
-                      const newRoomRef = roomsRef.doc();
-                      batch.set(newRoomRef, room);
-                  });
-                  
-                  return batch.commit();
-              }
-          }).catch(error => {
-              console.error("초기 데이터 설정 오류:", error);
-          });
-          
+function setupInitialData() {
+    // 기본 회의실 데이터 추가
+    const roomsRef = db.collection('rooms');
+    
+    roomsRef.get().then((snapshot) => {
+        if (snapshot.empty) {
+            console.log('회의실 데이터 없음 - 초기 데이터 생성');
+            // 데이터가 없으면 초기 데이터 추가
+            const initialRooms = [
+                { name: '회의실1', capacity: 4, equipment: '화이트보드, 전자칠판' },
+                { name: '회의실2', capacity: 4, equipment: '화이트보드' },
+                { name: '화상 회의실', capacity: 20, equipment: '컴퓨터, 음향시스템, 전자칠판, 화상회의 장비' },
+                { name: '스튜디오1', capacity: 3, equipment: '컴퓨터, 크로마키 배경지, 촬영장비(사무실보관)' },
+                { name: '스튜디오2', capacity: 6, equipment: '제품촬영 스탠드, 배경지, 촬영장비(사무실보관)' },
+                { name: '오픈세미나실', capacity: 30, equipment: '200인치 LED 디스플레이, 음향시스템' }
+            ];
+            
+            const batch = db.batch();
+            initialRooms.forEach(room => {
+                const newRoomRef = roomsRef.doc();
+                batch.set(newRoomRef, room);
+            });
+            
+            return batch.commit();
+        } else {
+            console.log('회의실 데이터 존재 - 초기화 스킵');
+        }
+    }).catch(error => {
+        console.error("초기 데이터 설정 오류:", error);
+    });
+       
           // 관리자 계정 추가 (없는 경우)
           const adminEmail = 'admin@example.com';
           const adminPassword = 'admin123';
