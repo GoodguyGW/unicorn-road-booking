@@ -167,6 +167,7 @@
         }
         .admin-panel {
             margin-top: 30px;
+            margin-bottom: 50px;
             padding: 20px;
             background-color: #f9f9f9;
             border-radius: 8px;
@@ -200,10 +201,12 @@
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            min-height: 700px;
         }
         
         #calendar {
-            height: 650px;
+            min-height: 650px;
+            height: auto;
         }
         
         .fc-event {
@@ -236,6 +239,8 @@
         
         .tab-content {
             display: none;
+            min-height: 500px;
+            padding-bottom: 50px;
         }
         
         .tab-content.active {
@@ -1280,9 +1285,11 @@ function displayBookings() {
               },
               locale: 'ko',
               height: 'auto',
+              contentHeight: 'auto',
               allDaySlot: false,
               slotMinTime: '09:00:00',
               slotMaxTime: '19:00:00',
+              expandRows: true,
               eventClick: function(info) {
                   showBookingDetail(info.event);
               }
@@ -1555,7 +1562,10 @@ function setupTabEvents() {
                             
                             // 캘린더 탭을 선택한 경우 캘린더 크기 조정
                             if (tabName === 'calendar' && calendar) {
-                                calendar.render();
+                                setTimeout(() => {
+                                    calendar.updateSize();
+                                    calendar.render();
+                                }, 100);
                             }
                             
                             // 내 예약 목록 탭을 선택한 경우 예약 목록 갱신
