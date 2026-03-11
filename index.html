@@ -202,7 +202,7 @@
         }
         
         #calendar {
-            height: 650px;
+            min-height: 600px;
         }
         
         .fc-event {
@@ -335,7 +335,7 @@
                 <div class="tab active" data-tab="rooms">회의실 예약</div>
                 <div class="tab" data-tab="calendar">예약 현황</div>
                 <div class="tab" data-tab="my-bookings">내 예약 목록</div>
-                <div class="tab" data-tab="admin" id="adminTab" style="display: none;">관리자 패널</div>
+                <div class="tab" data-tab="admin-panel" id="adminNavTab" style="display:none;">관리자 패널</div>
             </div>
             
             <!-- 회의실 예약 탭 내용 -->
@@ -394,8 +394,8 @@
             </div>
             
             <!-- 관리자 패널 탭 내용 -->
-            <div id="adminTab" class="tab-content">
-                <div class="admin-panel">
+            <div id="admin-panelTab" class="tab-content">
+            <div id="adminPanel" class="admin-panel">
                 <h2>관리자 패널</h2>
                 
                 <!-- 관리자 패널 탭 추가 -->
@@ -477,8 +477,8 @@
                         </table>
                     </div>
                 </div>
-                </div>
             </div>
+            </div><!-- /admin-panelTab -->
         </div>
     </div>
 
@@ -986,12 +986,12 @@ function updateUIForLoggedInUser() {
     // 관리자인 경우 태그 추가
     if (currentUser.role === 'admin') {
         document.getElementById('userStatus').innerHTML = '<span class="tag tag-admin">관리자</span>';
-        document.getElementById('adminTab').style.display = 'block';
+        document.getElementById('adminNavTab').style.display = 'block';
         loadUserManagement();
         loadUserStatistics();
     } else {
         document.getElementById('userStatus').innerHTML = '<span class="tag tag-approved">승인됨</span>';
-        document.getElementById('adminTab').style.display = 'none';
+        document.getElementById('adminNavTab').style.display = 'none';
     }
     
     // 회의실 카드 표시
@@ -1524,7 +1524,7 @@ function setupTabEvents() {
                 
                 // 관리자 패널 탭인 경우
                 if (tabContainerId === 'adminTabContainer') {
-                    const adminPanel = document.querySelector('#adminTab .admin-panel');
+                    const adminPanel = document.getElementById('adminPanel');
                     if (adminPanel) {
                         adminPanel.querySelectorAll('.tab-content').forEach(content => {
                             if (content) {
