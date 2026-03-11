@@ -352,7 +352,7 @@
             </div>
             
             <!-- 내 예약 목록 탭 내용 -->
-            <div id="myBookingsTab" class="tab-content" style="display: block;">
+            <div id="myBookingsTab" class="tab-content">
                 <div class="booking-list">
                     <h2>내 예약 목록</h2>
                     <table id="bookingTable">
@@ -1059,6 +1059,7 @@ function updateUIForLoggedInUser() {
                           ...doc.data()
                       });
                   });
+                  rooms.sort((a, b) => (a.order || 999) - (b.order || 999));
                   displayRooms();
               })
               .catch((error) => {
@@ -1588,12 +1589,12 @@ function setupInitialData() {
             console.log('회의실 데이터 없음 - 초기 데이터 생성');
             // 데이터가 없으면 초기 데이터 추가
             const initialRooms = [
-                { name: '회의실1', capacity: 4, equipment: '화이트보드, 전자칠판' },
-                { name: '회의실2', capacity: 4, equipment: '화이트보드' },
-                { name: '화상 회의실', capacity: 20, equipment: '컴퓨터, 음향시스템, 전자칠판, 화상회의 장비' },
-                { name: '스튜디오1', capacity: 3, equipment: '컴퓨터, 크로마키 배경지, 촬영장비(사무실보관)' },
-                { name: '스튜디오2', capacity: 6, equipment: '제품촬영 스탠드, 배경지, 촬영장비(사무실보관)' },
-                { name: '오픈세미나실', capacity: 30, equipment: '200인치 LED 디스플레이, 음향시스템' }
+                { name: '회의실1', capacity: 4, equipment: '화이트보드, 전자칠판', order: 1 },
+                { name: '회의실2', capacity: 4, equipment: '화이트보드', order: 2 },
+                { name: '화상 회의실', capacity: 20, equipment: '컴퓨터, 음향시스템, 전자칠판, 화상회의 장비', order: 3 },
+                { name: '스튜디오1', capacity: 3, equipment: '컴퓨터, 크로마키 배경지, 촬영장비(사무실보관)', order: 4 },
+                { name: '스튜디오2', capacity: 6, equipment: '제품촬영 스탠드, 배경지, 촬영장비(사무실보관)', order: 5 },
+                { name: '오픈세미나실', capacity: 30, equipment: '200인치 LED 디스플레이, 음향시스템', order: 6 }
             ];
             
             const batch = db.batch();
