@@ -335,6 +335,7 @@
                 <div class="tab active" data-tab="rooms">회의실 예약</div>
                 <div class="tab" data-tab="calendar">예약 현황</div>
                 <div class="tab" data-tab="my-bookings">내 예약 목록</div>
+                <div class="tab" data-tab="admin" id="adminTab" style="display: none;">관리자 패널</div>
             </div>
             
             <!-- 회의실 예약 탭 내용 -->
@@ -392,8 +393,9 @@
                 </div>
             </div>
             
-            <!-- 관리자 패널 -->
-            <div id="adminPanel" class="admin-panel" style="display: none;">
+            <!-- 관리자 패널 탭 내용 -->
+            <div id="adminTab" class="tab-content">
+                <div class="admin-panel">
                 <h2>관리자 패널</h2>
                 
                 <!-- 관리자 패널 탭 추가 -->
@@ -474,6 +476,7 @@
                             </tr>
                         </table>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -983,12 +986,12 @@ function updateUIForLoggedInUser() {
     // 관리자인 경우 태그 추가
     if (currentUser.role === 'admin') {
         document.getElementById('userStatus').innerHTML = '<span class="tag tag-admin">관리자</span>';
-        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('adminTab').style.display = 'block';
         loadUserManagement();
         loadUserStatistics();
     } else {
         document.getElementById('userStatus').innerHTML = '<span class="tag tag-approved">승인됨</span>';
-        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('adminTab').style.display = 'none';
     }
     
     // 회의실 카드 표시
@@ -1521,7 +1524,7 @@ function setupTabEvents() {
                 
                 // 관리자 패널 탭인 경우
                 if (tabContainerId === 'adminTabContainer') {
-                    const adminPanel = document.getElementById('adminPanel');
+                    const adminPanel = document.querySelector('#adminTab .admin-panel');
                     if (adminPanel) {
                         adminPanel.querySelectorAll('.tab-content').forEach(content => {
                             if (content) {
