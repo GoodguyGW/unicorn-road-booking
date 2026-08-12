@@ -191,87 +191,7 @@
             background-color: #2ecc71;
             color: white;
         }
-
-        /* 관리자 알림 스타일 */
-        .notification-bell {
-            position: relative;
-            cursor: pointer;
-            font-size: 20px;
-            padding: 5px 10px;
-        }
-        .notification-badge {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            background-color: #e74c3c;
-            color: white;
-            border-radius: 50%;
-            font-size: 11px;
-            padding: 1px 6px;
-            display: none;
-        }
-        .notification-dropdown {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 35px;
-            width: 350px;
-            max-height: 400px;
-            overflow-y: auto;
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 1100;
-            text-align: left;
-        }
-        .notification-dropdown.show {
-            display: block;
-        }
-        .notification-dropdown-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            border-bottom: 1px solid #eee;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .notification-dropdown-header a {
-            font-weight: normal;
-            font-size: 12px;
-            color: #3498db;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        .notification-item {
-            padding: 10px 15px;
-            border-bottom: 1px solid #f2f2f2;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: normal;
-        }
-        .notification-item:hover {
-            background-color: #f9f9f9;
-        }
-        .notification-item.unread {
-            background-color: #eaf4fd;
-            font-weight: bold;
-        }
-        .notification-item .notification-time {
-            display: block;
-            margin-top: 4px;
-            font-size: 11px;
-            color: #999;
-            font-weight: normal;
-        }
-        .notification-empty {
-            padding: 20px;
-            text-align: center;
-            color: #999;
-            font-size: 13px;
-        }
-
+        
         /* 캘린더 스타일 추가 */
         .calendar-container {
             margin-top: 30px;
@@ -401,16 +321,6 @@
             <div class="user-info">
                 <span id="userDisplayName"></span>
                 <span id="userStatus"></span>
-                <div class="notification-bell" id="notificationBell" style="display:none;">
-                    🔔<span class="notification-badge" id="notificationBadge">0</span>
-                    <div class="notification-dropdown" id="notificationDropdown">
-                        <div class="notification-dropdown-header">
-                            <span>알림</span>
-                            <a id="markAllReadBtn">모두 읽음 처리</a>
-                        </div>
-                        <div id="notificationList"></div>
-                    </div>
-                </div>
                 <button id="logoutBtn" class="btn" style="margin-left: 15px;">로그아웃</button>
             </div>
         </div>
@@ -630,9 +540,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-    <!-- EmailJS SDK (관리자 이메일 알림 발송용) -->
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-
     <script>
       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
       const firebaseConfig = {
@@ -666,128 +573,6 @@
 
       // 현재 로그인한 사용자
       let currentUser = null;
-
-      // EmailJS 설정 (관리자 이메일 알림용)
-      // https://www.emailjs.com 에 가입 후 Service ID, Template ID, Public Key를 발급받아 아래 값을 교체하세요.
-      const EMAILJS_CONFIG = {
-          publicKey: 'W-J3RuWlEgMU0H1RM',
-          serviceId: 'service_h0gizwf',
-          templateId: 'template_124gwdf',
-          adminEmail: 'changjigong@gmail.com' // 알림을 받을 관리자 이메일 주소
-      };
-
-      if (typeof emailjs !== 'undefined' && EMAILJS_CONFIG.publicKey !== 'YOUR_EMAILJS_PUBLIC_KEY') {
-          emailjs.init(EMAILJS_CONFIG.publicKey);
-      }
-
-      // 관리자에게 이메일 알림 발송 (EmailJS 미설정 시에는 건너뜀)
-      // title: 메일 제목에 들어갈 짧은 문구, name: 알림을 발생시킨 사람 이름, message: 상세 내용
-      function sendAdminEmailNotification(title, name, message) {
-          if (EMAILJS_CONFIG.publicKey === 'YOUR_EMAILJS_PUBLIC_KEY') {
-              console.log('EmailJS가 설정되지 않아 이메일 알림을 건너뜁니다.');
-              return;
-          }
-          const now = new Date();
-          const timeStr = `${formatDate(now)} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-          emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
-              to_email: EMAILJS_CONFIG.adminEmail,
-              title: title,
-              name: name,
-              time: timeStr,
-              message: message
-          }).catch((error) => {
-              console.error('이메일 알림 발송 오류:', error);
-          });
-      }
-
-      // Firestore에 알림 기록 생성 (사이트 내 알림창용)
-      function createNotification(type, message) {
-          db.collection('notifications').add({
-              type: type,
-              message: message,
-              read: false,
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          }).catch((error) => {
-              console.error('알림 생성 오류:', error);
-          });
-      }
-
-      let unsubscribeNotifications = null;
-
-      // 관리자용 알림 실시간 구독 시작
-      function setupNotificationListener() {
-          if (unsubscribeNotifications) {
-              unsubscribeNotifications();
-          }
-          unsubscribeNotifications = db.collection('notifications')
-              .orderBy('createdAt', 'desc')
-              .limit(30)
-              .onSnapshot((snapshot) => {
-                  const notifications = [];
-                  snapshot.forEach((doc) => {
-                      notifications.push({ id: doc.id, ...doc.data() });
-                  });
-                  renderNotifications(notifications);
-              }, (error) => {
-                  console.error('알림 구독 오류:', error);
-              });
-      }
-
-      // 알림 구독 종료 (로그아웃 시)
-      function teardownNotificationListener() {
-          if (unsubscribeNotifications) {
-              unsubscribeNotifications();
-              unsubscribeNotifications = null;
-          }
-          const bell = document.getElementById('notificationBell');
-          if (bell) bell.style.display = 'none';
-      }
-
-      // 알림 목록 렌더링
-      function renderNotifications(notifications) {
-          const listEl = document.getElementById('notificationList');
-          const badgeEl = document.getElementById('notificationBadge');
-          if (!listEl || !badgeEl) return;
-
-          const unreadCount = notifications.filter(n => !n.read).length;
-          badgeEl.textContent = unreadCount;
-          badgeEl.style.display = unreadCount > 0 ? 'inline-block' : 'none';
-
-          if (notifications.length === 0) {
-              listEl.innerHTML = '<div class="notification-empty">알림이 없습니다.</div>';
-              return;
-          }
-
-          listEl.innerHTML = notifications.map((n) => {
-              const time = n.createdAt && n.createdAt.toDate ? n.createdAt.toDate() : null;
-              const timeStr = time ? `${formatDate(time)} ${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}` : '';
-              return `
-                  <div class="notification-item ${n.read ? '' : 'unread'}" data-id="${n.id}">
-                      ${n.message}
-                      <span class="notification-time">${timeStr}</span>
-                  </div>
-              `;
-          }).join('');
-
-          listEl.querySelectorAll('.notification-item').forEach((item) => {
-              item.addEventListener('click', function() {
-                  const id = this.getAttribute('data-id');
-                  db.collection('notifications').doc(id).update({ read: true });
-              });
-          });
-      }
-
-      // 모든 알림 읽음 처리
-      function markAllNotificationsRead() {
-          db.collection('notifications').where('read', '==', false).get()
-              .then((snapshot) => {
-                  const batch = db.batch();
-                  snapshot.forEach((doc) => batch.update(doc.ref, { read: true }));
-                  return batch.commit();
-              })
-              .catch((error) => console.error('알림 일괄 읽음 처리 오류:', error));
-      }
 
       // 날짜 포맷 함수 (YYYY-MM-DD -> YYYY년 MM월 DD일)
       function formatDate(dateStr) {
@@ -1113,16 +898,6 @@
                   db.collection('bookings').add(newBooking)
                       .then(() => {
                           alert('예약이 성공적으로 완료되었습니다!');
-
-                          // 관리자에게 알림 발송
-                          const notifyMessage = `${currentUser.name}(${currentUser.department})님이 '${roomName}' 예약을 완료했습니다. (${formatDate(date)} ${formatTime(startTime)}~${formatTime(endTime)})`;
-                          createNotification('booking', notifyMessage);
-                          sendAdminEmailNotification(
-                              '새 예약 알림',
-                              currentUser.name,
-                              `${notifyMessage}\n목적: ${purpose}`
-                          );
-
                           loadBookings(); // 예약 목록 다시 로드
                           loadAllBookings(); // 캘린더 업데이트
                           
@@ -1212,14 +987,11 @@ function updateUIForLoggedInUser() {
     if (currentUser.role === 'admin') {
         document.getElementById('userStatus').innerHTML = '<span class="tag tag-admin">관리자</span>';
         document.getElementById('adminNavTab').style.display = 'block';
-        document.getElementById('notificationBell').style.display = 'inline-block';
-        setupNotificationListener();
         loadUserManagement();
         loadUserStatistics();
     } else {
         document.getElementById('userStatus').innerHTML = '<span class="tag tag-approved">승인됨</span>';
         document.getElementById('adminNavTab').style.display = 'none';
-        teardownNotificationListener();
     }
     
     // 회의실 카드 표시
@@ -1267,7 +1039,6 @@ function updateUIForLoggedInUser() {
           auth.signOut()
               .then(() => {
                   currentUser = null;
-                  teardownNotificationListener();
                   document.getElementById('appContainer').style.display = 'none';
                   document.getElementById('authContainer').style.display = 'block';
                   
@@ -1290,6 +1061,13 @@ function updateUIForLoggedInUser() {
                           id: doc.id,
                           ...doc.data()
                       });
+                  });
+                  // 같은 이름의 방이 중복 저장돼 있어도 화면에는 하나만 표시
+                  const seenNames = new Set();
+                  rooms = rooms.filter(room => {
+                      if (seenNames.has(room.name)) return false;
+                      seenNames.add(room.name);
+                      return true;
                   });
                   rooms.sort((a, b) => (a.order || 999) - (b.order || 999));
                   displayRooms();
@@ -1831,7 +1609,8 @@ function setupInitialData() {
             
             const batch = db.batch();
             initialRooms.forEach(room => {
-                const newRoomRef = roomsRef.doc();
+                // 방 이름을 문서 ID로 고정 → 여러 번 실행돼도 덮어쓰기만 되고 중복이 생기지 않음
+                const newRoomRef = roomsRef.doc(room.name);
                 batch.set(newRoomRef, room);
             });
             
@@ -1933,15 +1712,6 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
         })
         .then(() => {
             alert('회원가입이 완료되었습니다. 관리자 승인 후 시스템을 이용할 수 있습니다.');
-
-            // 관리자에게 알림 발송
-            const notifyMessage = `${name}(${department})님이 회원가입을 신청했습니다. 승인이 필요합니다.`;
-            createNotification('signup', notifyMessage);
-            sendAdminEmailNotification(
-                '신규 회원가입 승인 요청',
-                name,
-                `${notifyMessage}\n이메일: ${email}`
-            );
         })
         .catch((error) => {
             // 오류 처리 개선
@@ -1970,27 +1740,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 로그아웃 버튼 이벤트
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-
-    // 알림 벨 클릭 시 드롭다운 토글
-    document.getElementById('notificationBell').addEventListener('click', function(e) {
-        e.stopPropagation();
-        document.getElementById('notificationDropdown').classList.toggle('show');
-    });
-
-    // 드롭다운 바깥 클릭 시 닫기
-    document.addEventListener('click', function(e) {
-        const dropdown = document.getElementById('notificationDropdown');
-        const bell = document.getElementById('notificationBell');
-        if (dropdown && dropdown.classList.contains('show') && !bell.contains(e.target)) {
-            dropdown.classList.remove('show');
-        }
-    });
-
-    // 모두 읽음 처리 버튼
-    document.getElementById('markAllReadBtn').addEventListener('click', function(e) {
-        e.stopPropagation();
-        markAllNotificationsRead();
-    });
     
     // 현재 날짜로 날짜 입력 필드 초기화
     const today = new Date().toISOString().split('T')[0];
